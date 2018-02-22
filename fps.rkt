@@ -6,27 +6,27 @@
 
 (define world-fps-tick-lens (lens-compose fps-tick-number-lens world-fps-lens))
 
-(define TICK-RATE 30)
+(define TICK-RATE 1/30)
 (define SCENE-WIDTH 800)
 (define SCENE-HEIGHT 600)
 (define EMPTY-SCENE (empty-scene SCENE-WIDTH SCENE-HEIGHT))
 
 (define (start tick-rate)
-  (define state (world 1 (fps tick-rate 0)))
-  (big-bang state
+  (define f(fps tick-rate 0))
+  (big-bang (world 1 f)
     (on-tick update-state TICK-RATE)
     (to-draw render-scene)
     (on-key handle-key)
     (stop-when over? handle-over)
-    (close-on-stop 1)
-    ))
+    (close-on-stop 1)))
 
-(define (update-state s)
-  (lens-set world-fps-tick-lens s (add1 (lens-view world-fps-tick-lens s))))
+;; key idea! use a different world on a different thread for the fps that uses the SAME scene as the original world
+
+(define (update-state w)
+  (lens-set world-fps-tick-lens w (add1 (lens-view world-fps-tick-lens w))))
 
 ;; draw a pixel at the pair p location in the scene s
 (define (draw-pair p s)
-  (println p)
   (place-image
    (square 1 "solid" (color (random 255) (random 255) (random 255)))
    (car p)
@@ -49,4 +49,3 @@
 (define (handle-over w) EMPTY-SCENE)
 
 
-  
